@@ -5,4 +5,5 @@ I wrote the code as a final project in college
 # ToDo
 1. a clean up of the code 
 2. splitting the code into different files
-3. add better comments 
+3. add better comments
+4. performance improvement
