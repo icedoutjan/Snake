@@ -8,6 +8,6 @@ I wrote the code as a final project in college
 3. add better comments
 4. performance improvement
 
-# issues 
+# issues (i mean features)
 1. it seemes like the arduino crashed if the snake is too long
 2. evereytime the snake eats the 0 0 address of the martix turned on
