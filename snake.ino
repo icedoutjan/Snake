@@ -1,58 +1,30 @@
 #include <LedControl.h>
-//#include "appel.h"
-#include <Keypad.h>
+#include "snake.h"
 
-const byte ROWS = 4; // Anzahl der Zeilen des Keypads
-const byte COLS = 4; // Anzahl der Spalten des Keypads
-
-// Definition der Zeilen- und Spaltenpins des Keypads
-byte rowPins[ROWS] = { 53, 52, 51, 50 }; // Verbinde die Zeilen des Keypads mit diesen Pins
-byte colPins[COLS] = { 49, 48, 47, 46 }; // Verbinde die Spalten des Keypads mit diesen Pins
-
-// Definition der Tastatur
-char keys[ROWS][COLS] = {
-  {'1','2','3','A'},
-  {'4','5','6','B'},
-  {'7','8','9','C'},
-  {'*','0','#','D'}
-};
-
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
-
-LedControl lc = LedControl(2, 3, 4, 1);
-int snakeDirection = 3; // Anfangsrichtung: 0 = links, 1 = rechts, 2 = oben, 3 = unten
-
-bool debug = true;
-bool gameOver = false;
-class snake{
-  public:
-  int len = 3;
-  int body_x[64];
-  int body_y[64];
-  void move(int input);
-  bool alife();
-  void direction();
-  /*private:
-  bool feldInUse();*/
-};
-class appel : public snake{
+class appel{
   public:
   void spwanNew();
-  void blinck();
+  void bling();
   int appel_x;
   int appel_y;
+
+  private:
+  const float appelInterval = 200.0;  //to controll the speed of the blinking appel
+  float lastAppelTime = 0.0;
 };
+
+//init of some importent classes
+LedControl lc = LedControl(2, 3, 4, 1);
 appel appel;
 snake snake;
 
-float appelInterval = 200.0;
-float lastAppelTime = 0.0;
-
+//to controll die fps of the main game
 float intervalSpeed = 1.0;
 float lastFrameTime = 0.0; // Zeit des letzten Frames
 float frameInterval = 1000.0 / intervalSpeed; // Zeitintervall in Millisekunden
-
 unsigned long currentTime;
+
+bool gameOver = false;  //for performanc reasones 
 
 void setup() {
   //notic with this funktion it tooks longer to break the arduino
@@ -67,62 +39,36 @@ void setup() {
 
 void loop() {
   
-  
-
   while(!gameOver){
-  currentTime = millis(); // Überprüfe, ob es Zeit für ein neues Frame ist
-  if (currentTime - lastFrameTime >= frameInterval) {
-    float t = currentTime - lastFrameTime;  // display the speed in case of debug
-    lastFrameTime = currentTime;
-    frameInterval = 1000.0 / intervalSpeed; //for speedup reasons 
-    lc.clearDisplay(0);   //clear the led martix
 
-    snake.move(snakeDirection); //edit the array that i use to pri t the snake based on the direction
+    //time and fps controll stuff
+    currentTime = millis(); // Überprüfe, ob es Zeit für ein neues Frame ist
+    if (currentTime - lastFrameTime >= frameInterval) {
+      lastFrameTime = currentTime;
+      frameInterval = 1000.0 / intervalSpeed; //for speedup reasons
 
-    if(!snake.alife()){ // for performanc reasons 
-      gameOver = true;
-    }
-    
-    eat(); //does the snake eat teh appel and if yes speedup a bit and add a part to the snaek
-    
-    for(int i = 0;i < snake.len;i++){ //print the snake 
-      lc.setLed(0,snake.body_x[i],snake.body_y[i],true);
-    }
+      //game logic
+      snake.move(); //edit the array that i use to print the snake based on the direction
+      gameOver = !snake.alife(); // for performanc reasons 
+      eat(); //does the snake eat teh appel and if yes speedup a bit and add a part to the snaek
 
-    if(debug){
-      Serial.print("x ");
-      Serial.println(snake.body_x[0]);
-      Serial.print("y ");
-      Serial.println(snake.body_y[0]);
-      Serial.print("Aktualisiere Frame ");
-      Serial.println(t);
+      //visual stuff
+      lc.clearDisplay(0);   //clear the led martix
+      for(int i = 0;i < snake.len;i++){ //print the snake 
+        lc.setLed(0,snake.body_x[i],snake.body_y[i],true);
+      }
     }
-  }
-  appel.blinck();
-  //input stuff
-  snake.direction();
-  
- } 
+    //also for visualisation but it have to be out side of the if() because the had another time logic 
+    appel.bling();
+    //input stuff
+    snake.updateDirection();
+  } 
 }
 
-void appel::spwanNew(){ //spwan a new appel and speedup the game a bit 
-  while(feldInUse(appel_x,appel_y)){
-  appel_x = random(0,8); //just random() funktion is useless
-  appel_y = random(0,8);
-  }
-  intervalSpeed += 0.1;
-}
-
-void appel::blinck(){
-  if (currentTime - lastAppelTime >= appelInterval) {
-    lc.setLed(0,appel_x,appel_y,true);
-    lastAppelTime = currentTime;
-  }
-}
-
+// funktionen im file 
 bool feldInUse(int x,int y){  // prüf ob das feld von der schlange belegt ist
   for(int i = 0;i < snake.len;i++){ 
-    if (snake.body_x[i] == x){
+    if (snake.body_x[i] == x){  
       for(int l = 0;l < snake.len;i++){
         if (snake.body_y[l] == y){
           return true;
@@ -133,62 +79,25 @@ bool feldInUse(int x,int y){  // prüf ob das feld von der schlange belegt ist
   return false;
 }
 
-void snake::move(int input){
-  for (int i = len - 1; i > 0; i--) { 
-    body_x[i] = body_x[i - 1];
-    body_y[i] = body_y[i - 1];
-  }
-  switch (input) {
-    case 0: // Links
-      body_x[0] -= 1;
-      break;
-    case 1: // Rechts
-      body_x[0] += 1;
-      break;
-    case 2: // Oben
-      body_y[0] -= 1;
-      break;
-    case 3: // Unten
-      body_y[0] += 1;
-      break;
-  }
-}
-
-bool snake::alife(){
-  if(body_y[0] == 8 | body_y[0] == -1 | body_x[0] == 8 | body_x[0] == -1){
-    return false;
-  }
-  for(int i = 1;i < len;i++){
-    if(body_y[0] == body_y[i] && body_x[0] == body_x[i]){
-      return false;
-    }
-  }
-  return true;
-}
-
 void eat(){
   if(snake.body_x[0] == appel.appel_x && snake.body_y[0] == appel.appel_y){
     snake.len++;
     appel.spwanNew();
   }
 }
-void snake::direction(){
-  char key = keypad.getKey();
-  if (key) {
-    if (key == '8' && snakeDirection != 3) snakeDirection = 2; // Nach oben
-    else if (key == '2' && snakeDirection != 2) snakeDirection = 3; // Nach unten
-    else if (key == '4' && snakeDirection != 1) snakeDirection = 0; // Nach links
-    else if (key == '6' && snakeDirection != 0) snakeDirection = 1; // Nach rechts
+
+// appel funktionen
+void appel::spwanNew(){ //spwan a new appel and speedup the game a bit 
+  while(feldInUse(appel_x,appel_y)){
+    appel_x = random(0,8); //just random() funktion is useless without randomSeed()
+    appel_y = random(0,8);// i am not sure but i think the code is faster with randomSeed()
+  }
+  intervalSpeed += 0.1;
+}
+
+void appel::bling(){ //just a simpel way to let the led blinging wihtout delay
+  if (currentTime - lastAppelTime >= appelInterval) {
+    lc.setLed(0,appel_x,appel_y,true);
+    lastAppelTime = currentTime;
   }
 }
-/*void snake::alife(){
-  if(body_y[0] == 8 | body_y[0] == -1 | body_x[0] == 8 | body_x[0] == -1){
-    gameOver = true;
-  }else{
-    for(int i = 1;i < len;i++){
-      if(body_y[0] == body_y[i] && body_x[0] == body_x[i]){
-        gameOver = true;
-      }
-    }
-  }
-}*/
