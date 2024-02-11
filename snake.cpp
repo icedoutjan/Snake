@@ -2,7 +2,7 @@
 #include <Keypad.h>
 #include "snake.h"
 
-//keypad or input stuff
+// keypad or input stuff
 const byte ROWS = 4; // Anzahl der Zeilen des Keypads
 const byte COLS = 4; // Anzahl der Spalten des Keypads
 
@@ -20,13 +20,12 @@ const char keys[ROWS][COLS] = {
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-
-void snake::move(){
-  for (int i = len - 1; i > 0; i--) { 
+void snake::move(){ // edit the array that i use to print the snake based on the direction
+  for (int i = len - 1; i > 0; i--) { // move the body forward
     body_x[i] = body_x[i - 1];
     body_y[i] = body_y[i - 1];
   }
-  switch (direction) {
+  switch (direction) {  // check for direction and move in the head
     case 0: // Links
       body_x[0] -= 1;
       break;
@@ -42,20 +41,19 @@ void snake::move(){
   }
 }
 
-bool snake::alife(){
-  if(body_y[0] == 8 | body_y[0] == -1 | body_x[0] == 8 | body_x[0] == -1){
+bool snake::alife(){  // check for colliton 
+  if(body_y[0] == 8 | body_y[0] == -1 | body_x[0] == 8 | body_x[0] == -1){  // against the wall
     return false;
   }
   for(int i = 4;i < len;i++){ // the loop starts at 4 becaus its impossible that the snake hits them self in this parts 
-    if(body_y[0] == body_y[i] && body_x[0] == body_x[i]){
+    if(body_y[0] == body_y[i] && body_x[0] == body_x[i]){ //against the snake 
       return false;
     }
   }
   return true;
 }
 
-
-void snake::updateDirection(){
+void snake::updateDirection(){  // get the input and update the direction 
   char key = keypad.getKey();
   if (key) {
     if (key == '8' && direction != 3) direction = 2; // Nach oben
