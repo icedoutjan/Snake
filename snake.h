@@ -1,6 +1,7 @@
 #ifndef snake_h
 #define sanke_h
 #include "Arduino.h"
+
 class snake{
   public:
   int len = 3;
@@ -11,4 +12,5 @@ class snake{
   bool alife();
   void updateDirection();
 };
+
 #endif
