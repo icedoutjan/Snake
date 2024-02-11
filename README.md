@@ -5,8 +5,7 @@ I wrote the code as a final project in college
 # ToDo 
 1. add the ability to play with joystick instead of keypad
 2. add the ability to display some data on a lcd display
-3. add better comments
-4. performance improvement
+3. performance improvement
 
 # issues (i mean features)
 1. it seemes like the arduino crashed if the snake is too long
