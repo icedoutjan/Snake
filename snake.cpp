@@ -2,6 +2,11 @@
 #include <Keypad.h>
 #include "snake.h"
 
+
+#define VRX_PIN  A0 // Arduino pin connected to VRX pin
+#define VRY_PIN  A1 // Arduino pin connected to VRY pin
+#define SW_PIN   A2
+
 // keypad or input stuff
 const byte ROWS = 4; // Anzahl der Zeilen des Keypads
 const byte COLS = 4; // Anzahl der Spalten des Keypads
@@ -39,6 +44,7 @@ void snake::move(){ // edit the array that i use to print the snake based on the
       body_y[0] += 1;
       break;
   }
+  lastDirection = direction;
 }
 
 bool snake::alife(){  // check for colliton 
@@ -56,9 +62,44 @@ bool snake::alife(){  // check for colliton
 void snake::updateDirection(){  // get the input and update the direction 
   char key = keypad.getKey();
   if (key) {
-    if (key == '8' && direction != 3) direction = 2; // Nach oben
-    else if (key == '2' && direction != 2) direction = 3; // Nach unten
-    else if (key == '4' && direction != 1) direction = 0; // Nach links
-    else if (key == '6' && direction != 0) direction = 1; // Nach rechts
+    if (key == '8' && lastDirection != 3) direction = 2; // Nach oben
+    else if (key == '2' && lastDirection != 2) direction = 3; // Nach unten
+    else if (key == '4' && lastDirection != 1) direction = 0; // Nach links
+    else if (key == '6' && lastDirection != 0) direction = 1; // Nach rechts
+  }
+}
+void snake::updateDirectionJoystick(){
+  xValue = analogRead(VRX_PIN);
+  yValue = analogRead(VRY_PIN);
+
+  if ((xValue >= 975 && xValue <= 1023) && lastDirection != 3) direction = 2; // Nach oben
+    else if ((xValue >= 0 && xValue <= 50) && lastDirection != 2) direction = 3; // Nach unten
+    else if ((yValue >= 975 && yValue <= 1023) && lastDirection != 1) direction = 0; // Nach links
+    else if ((yValue >= 0 && yValue <= 50) && lastDirection != 0) direction = 1; // Nach rechts
+}
+void snake::setup(){
+  for(int i = len;i < maxlen;i++){
+    body_y[i] = -1;
+    body_x[i] = -1;
+  }
+}
+void snake::reset(){
+  len = 3;
+  lastDirection = 3;
+  direction = 3;
+
+  for(int i = 0;i < len;i++){
+    body_y[i] = 0;
+    body_x[i] = 0;
+  }
+  for(int i = len;i < maxlen;i++){
+    body_y[i] = -1;
+    body_x[i] = -1;
+  }
+  while(true){
+    //wait till press the stick down
+    if(analogRead(SW_PIN) == 0){
+      break;
+    }
   }
 }
