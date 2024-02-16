@@ -1,5 +1,9 @@
- #include <LedControl.h>
+#include <LedControl.h>
 #include "snake.h"
+#include <LiquidCrystal_I2C.h>  //LiquidCrystal I2C by Frank de Brabander
+#include <EEPROM.h>
+
+int hightScor;
 
 class apple{
   public:
@@ -14,6 +18,7 @@ class apple{
 };
 
 //init of some importent classes
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 LedControl lc = LedControl(2, 3, 4, 1);
 apple apple;
 snake snake;
@@ -30,17 +35,24 @@ void setup() {
   //notic with this funktion it tooks longer to break the arduino
   randomSeed(analogRead(0)); //for a realistic random effekt 
   Serial.begin(9600);
+  //for martix
   lc.shutdown(0, false);
   lc.setIntensity(0, 1);
   lc.clearDisplay(0);
-
+  //for lcd display
+  lcd.init();
+  lcd.backlight();
+  //set up for game engien 
+  snake.setup();
   apple.spwanNew();
+
+  //hightScor
+  EEPROM.get(0, hightScor);
 }
 
 void loop() {
   
   while(!gameOver){
-
     //time and fps controll stuff
     currentTime = millis(); // Überprüfe, ob es Zeit für ein neues Frame ist
     if (currentTime - lastFrameTime >= frameInterval) {
@@ -51,26 +63,30 @@ void loop() {
       snake.move(); 
       //check after moving the snake does the snake hit a forbind point 
       gameOver = !snake.alife(); // for performanc reasons 
-      eat(); 
-
+      eat();
       //visual stuff
+      lcdPrint();
       lc.clearDisplay(0);   //clear the led martix
-      for(int i = 0;i < snake.len;i++){ //print the snake 
+      for(int i = 0;i < snake.len;i++){   //print the snake 
         lc.setLed(0,snake.body_x[i],snake.body_y[i],true);
       }
+      
     }
     //also for visualisation but it have to be out side of the if() because the had another time logic 
     apple.bling();
     //input stuff
-    snake.updateDirection();
+    snake.updateDirectionJoystick();
   } 
+  dead();
+  snake.reset();
+  gameOver = false;
 }
 
 // funktionen im file 
 bool feldInUse(int x,int y){  // prüf ob das feld von der schlange belegt ist
   for(int i = 0;i < snake.len;i++){ 
     if (snake.body_x[i] == x){  
-      for(int l = 0;l < snake.len;i++){
+      for(int l = 0;l < snake.len;l++){
         if (snake.body_y[l] == y){
           return true;
         }
@@ -83,8 +99,33 @@ bool feldInUse(int x,int y){  // prüf ob das feld von der schlange belegt ist
 void eat(){ //does the snake eat the appel and if yes speedup a bit and add a part to the snaek
   if(snake.body_x[0] == apple.apple_x && snake.body_y[0] == apple.apple_y){
     snake.len++;
+    
+    if(snake.len > hightScor){
+      hightScor = snake.len;
+      EEPROM.put(0, hightScor);
+    }
     apple.spwanNew();
   }
+}
+
+void lcdPrint() { // vereinfacht die ausgabe auf dem lcd display 
+  lcd.clear();
+  
+  lcd.print("scor ");
+  lcd.print(snake.len);
+  lcd.setCursor(0, 1);
+  
+  lcd.print("hight ");
+  lcd.print(hightScor);
+  
+}
+
+void dead(){
+  lcd.clear();
+  lcd.print("yuor are dead");
+  lcd.setCursor(0, 1);
+  lcd.print("scor ");
+  lcd.print(snake.len);
 }
 
 // appel funktionen
