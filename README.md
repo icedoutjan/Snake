@@ -11,4 +11,3 @@ I wrote the code as a final project in college
 
 # ideas 
 - for the arduino crash problem a easy fix would be to limit the length of the snake
-- to check the core dump could also help 
