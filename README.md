@@ -15,7 +15,7 @@ I wrote the code as a final project in college
 | Led Matrix   | <img src="assets/Matrix.png" width="200" height="200" alt="Matrix">             |
 | LCD Display  | <img src="assets/LCD.png" width="300" height="200" alt="LCD">                   |
 | KeyPad       | <img src="assets/KeyPad.png" width="200" height="200" alt="KeyPad">             |
-| JoyStick     | <img src="assets/KeyPad.png" width="200" height="200" alt="KeyPad">             |
+| JoyStick     | <img src="assets/JoyStick.png" width="200" height="200" alt="JoyStick">             |
 # How it work 
 
 the Arduino mage board has an EEPROM Storage thats important to safe the Highscore. <br>
